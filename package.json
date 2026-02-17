@@ -35,6 +35,14 @@
   ],
   "author": "fellechat",
   "license": "MIT",
+  "homepage": "https://github.com/Git-Fg/openclaw-docs-search#readme",
+  "bugs": {
+    "url": "https://github.com/Git-Fg/openclaw-docs-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Git-Fg/openclaw-docs-search.git"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
