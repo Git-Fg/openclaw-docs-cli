@@ -12,7 +12,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ocdocs": "dist/cli.js"
+    "ocdocs": "dist/cli.js",
+    "openclaw-docs-search": "dist/cli.js"
   },
   "sideEffects": false,
   "scripts": {
