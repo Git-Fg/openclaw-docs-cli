@@ -1,0 +1,54 @@
+{
+  "name": "openclaw-docs-search",
+  "version": "3.0.0",
+  "description": "Minimalist OpenClaw docs search with Fuse.js fuzzy matching, local paths, and TypeScript",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ocdocs": "./dist/cli.js"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/*.test.js",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "openclaw",
+    "documentation",
+    "search",
+    "docs",
+    "cli",
+    "gateway",
+    "fuzzy-search",
+    "fuse",
+    "typescript"
+  ],
+  "author": "fellechat",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "fuse.js": "^7.1.0",
+    "openclaw": "^2026.2.15"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
+  }
+}
