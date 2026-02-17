@@ -1,4 +1,4 @@
-# openclaw-docs-search
+# openclaw-docs-cli
 
 Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 
@@ -6,10 +6,10 @@ Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 
 ```bash
 # Install globally (recommended for CLI use)
-npm install -g openclaw-docs-search
+npm install -g openclaw-docs-cli
 
 # Install as a dependency
-npm install openclaw-docs-search
+npm install openclaw-docs-cli
 ```
 
 **Note:** Requires `openclaw` package to be installed for docs auto-resolution.
@@ -30,7 +30,7 @@ ocdocs --list
 ## API
 
 ```typescript
-import { searchDocs, getDocs } from 'openclaw-docs-search';
+import { searchDocs, getDocs } from 'openclaw-docs-cli';
 
 // Search
 const results = searchDocs('discord config');

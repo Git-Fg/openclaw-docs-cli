@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Golden Paths
 
 **Finding OpenClaw documentation:**
-1. Default: `ocdocs "<query>"` or `openclaw-docs-search "<query>"` → returns path + summary + read_when (token-efficient)
+1. Default: `ocdocs "<query>"` or `openclaw-docs-cli "<query>"` → returns path + summary + read_when (token-efficient)
 2. No results? Try: split multi-word terms, `--threshold 0.3`, or `--list` for discovery
 3. Need full details? Use `ocdocs "<query>" --expand` (adds urls, score, title)
 4. Always use native Read tool for file contents; `ocdocs` is for discovery only
