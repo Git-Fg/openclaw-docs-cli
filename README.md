@@ -2,6 +2,18 @@
 
 Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 
+## Installation
+
+```bash
+# Install globally (recommended for CLI use)
+npm install -g openclaw-docs-search
+
+# Install as a dependency
+npm install openclaw-docs-search
+```
+
+**Note:** Requires `openclaw` package to be installed for docs auto-resolution.
+
 ## CLI
 
 ```bash

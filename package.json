@@ -1,6 +1,6 @@
 {
   "name": "openclaw-docs-search",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "Minimalist OpenClaw docs search with Fuse.js fuzzy matching, local paths, and TypeScript",
   "type": "module",
   "exports": {
@@ -12,7 +12,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ocdocs": "./dist/cli.js"
+    "ocdocs": "dist/cli.js"
   },
   "sideEffects": false,
   "scripts": {
