@@ -238,7 +238,7 @@ function calculateSimilarity(a: string, b: string): number {
 const colors = { reset: '\x1b[0m', bold: '\x1b[1m', blue: '\x1b[34m', dim: '\x1b[2m', yellow: '\x1b[33m' };
 const c = (t: string, k: keyof typeof colors) => `${colors[k]}${t}${colors.reset}`;
 
-const REMINDER = () => `⚠️ REMINDER: Use native read tools for file contents; ocdocs for discovery. Run "ocdocs --help" to refresh your knowledge on how to use it.`;
+const REMINDER = () => `⚠️ REMINDER: Use native Read tool for full file contents. Run "ocdocs --help" to see all options.`;
 
 export function formatResults(results: SearchResult[], format: OutputFormat, query: string = ''): string {
   if (results.length === 0) return c('No results found.\n', 'dim');
@@ -247,24 +247,26 @@ export function formatResults(results: SearchResult[], format: OutputFormat, que
     let out = query ? c(`Searching for: "${query}"\n\n`, 'bold') : c('All Documents\n\n', 'bold');
     for (const r of results) {
       out += c(`${r.local} (score: ${(1 - r.score).toFixed(2)})`, 'bold') + '\n';
-      out += c(`   Relative: `, 'dim') + r.path + '\n';
-      out += c(`   Online: `, 'dim') + c(r.online, 'blue') + '\n';
-      if (r.title) out += c(`   Title:  `, 'dim') + r.title + '\n';
-      if (r.summary) out += c(`   Summary:`, 'dim') + r.summary + '\n';
-      if (r.readWhen.length) out += c(`   Read When:`, 'dim') + r.readWhen.join('; ') + '\n';
-      if (r.error) out += c(`   Error:  ${r.error}`, 'yellow') + '\n';
+      out += c(`   docs_relative: `, 'dim') + r.path + '\n';
+      out += c(`   online: `, 'dim') + c(r.online, 'blue') + '\n';
+      if (r.title) out += c(`   title:  `, 'dim') + r.title + '\n';
+      if (r.summary) out += c(`   summary:`, 'dim') + r.summary + '\n';
+      if (r.readWhen.length) out += c(`   read_when:`, 'dim') + r.readWhen.join('; ') + '\n';
+      if (r.error) out += c(`   error:  ${r.error}`, 'yellow') + '\n';
       out += '\n';
     }
     return out + c(`Found ${results.length} result${results.length !== 1 ? 's' : ''}\n`, 'dim') +
       c(`\n${REMINDER()}\n`, 'dim');
   }
 
-  // Default format: cwd-relative path + summary + read_when only (token-efficient for agents)
+  // Default format: emoji + title header + field: value pairs (agent-readable, zero-transformation)
   let out = '';
   for (const r of results) {
-    out += `${r.cwdRelative}\n`;
-    if (r.summary) out += `  ${c('Summary:', 'dim')} ${r.summary}\n`;
-    if (r.readWhen.length) out += `  ${c('Read When:', 'dim')} ${r.readWhen.join('; ')}\n`;
+    const title = r.title ? `${r.title}` : r.path;
+    out += `📄 ${c(title, 'bold')}\n`;
+    out += `  ${c('local_path:', 'dim')} ${r.cwdRelative}\n`;
+    if (r.summary) out += `  ${c('summary:', 'dim')} ${r.summary}\n`;
+    if (r.readWhen.length) out += `  ${c('read_when:', 'dim')} ${r.readWhen.join('; ')}\n`;
     out += '\n';
   }
   return out + c(`Found ${results.length} result${results.length !== 1 ? 's' : ''}\n`, 'dim') +

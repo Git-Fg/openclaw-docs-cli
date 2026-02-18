@@ -19,8 +19,8 @@ ENVIRONMENT:
   DOCS_DIR        Override docs directory (/usr/lib/node_modules/openclaw/docs)
 
 SEARCH BEHAVIOR:
-  - Default output shows: cwd-relative path (node_modules/...), summary, read_when
-  - Use --expand for absolute path, docs-relative path, urls, score, title
+  - Default output shows: title with emoji, local_path, summary, read_when
+  - Use --expand for absolute path, docs_relative, online url, score
   - Multi-word queries: Automatically splits and recombines if no exact match
   - Threshold: Lower = stricter matching (try 0.3 for stricter, 0.5 for looser)
 

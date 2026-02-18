@@ -23,8 +23,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Finding OpenClaw documentation:**
 1. Run `ocdocs` (no args) → shows help with example queries to try
-2. Default: `ocdocs "<query>"` → returns cwd-relative path (node_modules/...) + summary + read_when
-3. Expanded: `ocdocs "<query>" --expand` → returns absolute path + docs-relative path + urls + score + title
+2. Default: `ocdocs "<query>"` → returns 📄 title + local_path + summary + read_when
+3. Expanded: `ocdocs "<query>" --expand` → adds absolute path + docs_relative + online url + score
 4. Always use native Read tool for file contents; `ocdocs` is for discovery only
 
 **Output format principle:** Minimal by default, verbose on request. This keeps token costs low for the common case (finding the right doc) while allowing detail when needed.

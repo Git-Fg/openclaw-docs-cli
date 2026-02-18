@@ -5,11 +5,18 @@ Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 ## Installation
 
 ```bash
-# Install globally (recommended for CLI use)
-npm install -g openclaw-docs-cli
+# Option 1: Install from git URL (recommended)
+npm install git+https://github.com/Git-Fg/openclaw-docs-cli.git
 
-# Install as a dependency
-npm install openclaw-docs-cli
+# Option 2: Install using shorthand
+npm install Git-Fg/openclaw-docs-cli
+
+# Option 3: Clone and link (for development)
+git clone https://github.com/Git-Fg/openclaw-docs-cli.git
+cd openclaw-docs-cli
+npm install
+npm run build
+npm link
 ```
 
 **Note:** Requires `openclaw` package to be installed for docs auto-resolution.
@@ -17,11 +24,11 @@ npm install openclaw-docs-cli
 ## CLI
 
 ```bash
-# Search - shows path + summary + read_when by default
-ocdocs "discord config"
+# Search - shows 📄 title + local_path + summary + read_when
+ocdocs "oauth"
 
-# Expand for full details (urls, score, title)
-ocdocs "discord config" --expand
+# Expand for full details (absolute path, docs_relative, online url, score)
+ocdocs "oauth" --expand
 
 # List all docs (discovery phase)
 ocdocs --list
@@ -30,10 +37,10 @@ ocdocs --list
 ## API
 
 ```typescript
-import { searchDocs, getDocs } from 'openclaw-docs-cli';
+import { searchDocs, getDocs } from './dist/index.js';
 
 // Search
-const results = searchDocs('discord config');
+const results = searchDocs('oauth config');
 
 // Get all docs
 const allDocs = getDocs();
@@ -50,12 +57,14 @@ const allDocs = getDocs();
 Append these to your project's `AGENTS.md`. Do not replace your full prompt setup:
 
 ```markdown
-IMPORTANT: You have access to `ocdocs` CLI tool, optimized for AI Agents.
+OCDOCS CLI :
+You have access to `ocdocs` CLI tool, a CLI that allows you to perform for free and unlimited researches on openclaw documentation.
 - First step: Run `ocdocs --help` to learn capabilities
-- Default output: cwd-relative path (node_modules/...) + summary + read_when (token-efficient)
+- No need to use "&" or pipe syntax, execute the simple, full CLI like `ocdocs "oauth"`
+TIPS:
 - Use --expand for absolute path, urls, score, title
 - If no results: split multi-word queries, adjust --threshold, or try --list
-- Paths are usable directly with Read tool; ocdocs is for discovery only
+- Read files using your native tools, avoid cat unless you have no other possibilities. 
 ```
 
 ## Features
@@ -63,7 +72,7 @@ IMPORTANT: You have access to `ocdocs` CLI tool, optimized for AI Agents.
 - **Consolidated** - Single-file core logic for zero-friction integration.
 - **Fuzzy Search** - Typos and partial matches via Fuse.js.
 - **AI-First** - Token-efficient text output designed for agent context windows.
-- **Modern** - Dual CJS/ESM support, native Node.js types.
+- **Modern** - ESM-only with native Node.js types.
 
 ## License
 
