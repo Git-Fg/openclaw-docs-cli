@@ -19,13 +19,16 @@ ENVIRONMENT:
   DOCS_DIR        Override docs directory (/usr/lib/node_modules/openclaw/docs)
 
 SEARCH BEHAVIOR:
-  - Default output shows: path, summary, read_when
-  - Use --expand for full details (urls, score, title)
+  - Default output shows: cwd-relative path (node_modules/...), summary, read_when
+  - Use --expand for absolute path, docs-relative path, urls, score, title
   - Multi-word queries: Automatically splits and recombines if no exact match
   - Threshold: Lower = stricter matching (try 0.3 for stricter, 0.5 for looser)
-`;
 
-const stripEmojis = (t: string) => process.stdout.isTTY === true ? t : t.replace(/[\p{Emoji}]/gu, '');
+EXAMPLES:
+  ocdocs "oauth"           # Search for OAuth documentation
+  ocdocs "webhook config"   # Find webhook configuration docs
+  ocdocs "agent" --limit 3  # Get top 3 results about agents
+`;
 
 async function main() {
   const { values, positionals } = parseArgs({
@@ -50,12 +53,11 @@ async function main() {
 
   if (values.list) {
     const docs = getDocs(docsDir);
-    return console.log(docs.map(d => d.path).join('\n'));
+    return console.log(docs.map(d => d.cwdRelative).join('\n'));
   }
 
   if (!query) {
-    console.error('Error: Query required or use --list');
-    process.exit(1);
+    return console.log(HELP);
   }
 
   let results = searchDocs(query, { docsDir, threshold, limit });
@@ -69,14 +71,14 @@ async function main() {
         .forEach(r => (!combined.has(r.path) || r.score < combined.get(r.path)!.score) && combined.set(r.path, r));
     }
     results = [...combined.values()].sort((a, b) => a.score - b.score).slice(0, limit);
-    if (results.length > 0) console.log(stripEmojis(`⚠️  No exact matches. Showing fallback results...\n`));
+    if (results.length > 0) console.log(`⚠️  No exact matches. Showing fallback results...\n`);
   }
 
   if (results.length === 0) {
-    console.error(stripEmojis(`No results for: "${query}"`));
+    console.error(`No results for: "${query}"`);
     const suggestions = getSuggestions(query, getDocs(docsDir));
-    if (suggestions.length) console.error(stripEmojis(`Did you mean: ${suggestions.join(', ')}?`));
-    console.error(stripEmojis(`Try: split multi-word queries, adjust --threshold, or --list`));
+    if (suggestions.length) console.error(`Did you mean: ${suggestions.join(', ')}?`);
+    console.error(`Try: split multi-word queries, adjust --threshold, or --list`);
     process.exit(1);
   }
 

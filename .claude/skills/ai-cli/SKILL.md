@@ -1,6 +1,6 @@
 ---
 name: ai-cli
-description: This skill should be used when building or refactoring CLI tools for AI agent consumption. Use when the user asks to "build an agent-friendly CLI", "optimize CLI for AI", "make CLI self-teaching", "design CLI for LLMs", "create agent-oriented tool output", or mentions token-efficient output, semantic density, TTY detection, or agent discovery patterns.
+description: This skill should be used when building or refactoring CLI tools for AI agent consumption. Use when the user asks to "build an agent-friendly CLI", "optimize CLI for AI", "make CLI self-teaching", "design CLI for LLMs", "create agent-oriented tool output", or mentions token-efficient output, semantic density, agent discovery patterns, zero-transformation returns, or agent-usable paths.
 metadata:
   author: Git-FG
   version: "1.0"
@@ -16,11 +16,13 @@ Traditional CLI design optimizes for human users with muscle memory and intuitio
 
 ### What This Skill Provides
 
-1. **Self-Teaching Pattern** - `--help` as complete manual; agents learn by reading, not doing
-2. **Semantic Density** - Natural language text, not JSON; matches LLM native parsing
-3. **Failure Recovery** - Actionable next steps instead of error codes
-4. **Attention Management** - Counteract lost-in-the-middle with reminders
-5. **TTY Awareness** - Strip visuals when piped
+1. **Zero-Transformation Returns** - Everything agents receive must be immediately usable without manipulation
+2. **Self-Teaching Pattern** - `--help` as complete manual; agents learn by reading, not doing
+3. **Semantic Density** - Natural language text, not JSON; matches LLM native parsing
+4. **Failure Recovery** - Actionable next steps instead of error codes
+5. **Attention Management** - Counteract lost-in-the-middle with reminders
+6. **Token-Efficient Output** - No spammy progress, no interactive elements
+7. **Agent-Perspective Testing** - Test that another agent can use your output without translation
 
 ### Why This Matters
 
@@ -35,6 +37,57 @@ Agents consume CLIs differently than humans:
 | Visual processing | Natural language parsing |
 
 **Key insight:** A CLI designed for agents serves humans too. The reverse is not true.
+
+---
+
+## The Core Principle: Zero-Transformation Returns
+
+**Golden rule:** Everything returned to an agent must be immediately usable without mental translation or code manipulation.
+
+### What This Means
+
+| ❌ Wrong | ✅ Right |
+|---------|----------|
+| Paths relative to internal dirs | Paths relative to `process.cwd()` |
+| IDs that require separate lookup | Full objects or actionable references |
+| Encoded data needing parse | Natural language or immediately usable format |
+| Progress every 1% (100+ updates) | Progress every 10% (~10 updates max) |
+| Decorative emojis (5+) | 2 emojis max (warnings/reminders only) |
+
+### Why This Matters
+
+Agents don't "interpret" output like humans do. When they receive something, they either:
+
+1. **Use it directly** → Efficient, token-saving, flows smoothly
+2. **Transform it** → Wastes tokens, error-prone, breaks flow
+3. **Get stuck** → Dead end, requires user intervention
+
+If you're returning something that requires the agent to think *"now I need to..."* — you've failed.
+
+### The Test
+
+Can you copy-paste the output directly into another tool/action? If no, add transformation or change the format.
+
+### Examples
+
+```text
+# ❌ Bad - requires mental work
+Path: gateway/authentication.md
+# Agent thinks: where is this? do I prepend docs/?
+
+# ✅ Good - immediately usable
+Path: node_modules/openclaw/docs/gateway/authentication.md
+# Agent thinks: paste into Read tool, done
+
+# ❌ Bad - encoded reference
+Doc ID: auth_12345
+# Agent must: run another command to get the path
+
+# ✅ Good - complete information
+Path: node_modules/.../authentication.md
+ID: auth_12345
+# Agent has: everything needed
+```
 
 ---
 
@@ -60,7 +113,7 @@ Agents consume CLIs differently than humans:
 
 ---
 
-## 1. The `--help` Contract
+## 2. The `--help` Contract
 
 The tool must teach itself. `--help` is the complete manual—assume nothing else exists.
 
@@ -135,7 +188,7 @@ Notice: No specific flag names are prescribed. Teach the pattern, not the implem
 
 ---
 
-## 2. Semantic Density
+## 3. Semantic Density
 
 Every token matters. Use natural language—the agent's native format.
 
@@ -196,42 +249,101 @@ The flag name (`--verbose`, `--expand`, `--detail`) doesn't matter. The pattern 
 
 ---
 
-## 3. TTY Detection
+## 4. Token-Efficient Output & Visual Elements
 
-Strip visuals when piped. Agents consume output programmatically.
+**The Principle:** Every token spent on output should either (a) enable action or (b) prevent failure. Decoration is waste.
 
 ### The Pattern
 
-```typescript
-// Strict check: TTY is a boolean, not just truthy
-const isTTY = process.stdout.isTTY === true;
-const color = (text, code) => isTTY ? `\x1b[${code}m${text}\x1b[0m` : text;
-const emoji = (text) => isTTY ? text : text.replace(/\p{Emoji}/gu, '');
-```
-
-### Behavior
-
 ```text
-# Terminal (TTY) → visuals shown
-🚨 REMINDER: Use native read tools for file contents
+# ❌ Bad - spammy (100s of updates, emoji soup)
+Processing: [████████████████████] 100% (2:45)
+🔍💡📄⚠️🚨 Found 15 results
 
-# Piped (non-TTY) → clean text
-REMINDER: Use native read tools for file contents
+# ✅ Good - meaningful (~10 updates max, 2 emojis)
+Progress: 10% (~25s remaining)...
+Progress: 20% (~50s remaining)...
+⚠️ Found 15 results. Try: split query, lower threshold
 ```
+
+### Core Rules
+
+**Progress indicators:**
+- Show every 10% max (~10 updates total)
+- Include time estimate for predictability
+- Enough to detect early issues, not enough to spam
+
+**Visual elements:**
+- 2 emojis max: warnings (⚠️) and critical reminders only
+- No animations: spinners, bouncing dots, progress bars
+- Colors are fine: for human readability, but always use labels too
+
+**Interactive elements:**
+- None. No prompts, no "press any key", no blocking input
 
 **DO:**
-- Use strict equality: `process.stdout.isTTY === true`
-- Strip colors, emojis, spinners when piped
-- Preserve semantic content (labels, values)
+- Use fixed labels as parsing anchors
+- Show meaningful progress milestones
+- Keep output under 1KB per operation
+- Reserve emojis for warnings/reminders
 
 **DON'T:**
-- Use truthy check: `process.stdout.isTTY` (can be undefined)
-- Strip semantic labels along with visuals
-- Assume TTY is always boolean
+- Use tqdm-style progress bars (updates every 1%)
+- Require interactive input of any kind
+- Use decorative emojis (🔍, 📄, 🚨, etc.)
+- Rely on color alone for meaning
 
 ---
 
-## 4. Actionable Failures (The Pivot)
+## 5. Agent-Usable Paths
+
+Paths returned to agents must be directly usable with Read/Glob tools - no mental translation required.
+
+### The Pattern
+
+```text
+# ❌ Bad - relative to internal dir (useless to agent)
+docs/gateway/authentication.md
+
+# ✅ Good - relative to process.cwd() (directly usable)
+node_modules/openclaw/docs/gateway/authentication.md
+```
+
+### Three Path Types to Understand
+
+| Type | Example | Purpose |
+|------|---------|---------|
+| `cwdRelative` | `node_modules/.../file.md` | Default output, --list, agent consumption |
+| `internalRelative` | `docs/file.md` | Expanded mode reference only |
+| `absolute` | `/Users/.../file.md` | Expanded mode primary entry |
+
+### Core Rules
+
+**Always use cwd-relative paths by default:**
+- Paths from `process.cwd()` are directly usable by agents
+- No mental translation or path manipulation required
+- Works with native Read/Glob tools immediately
+
+**Consistency across all modes:**
+- `--list` output must match default search output format
+- All "discovery" modes use the same path format
+- Expanded mode can show absolute as primary + internal-relative as reference
+
+**DO:**
+- Use `relative(process.cwd(), filePath)` for default output
+- Keep `--list` and search output in the same format
+- Test by copying paths directly to Read tool
+- Show absolute path in expanded mode with internal-relative labeled
+
+**DON'T:**
+- Show paths relative to internal directories
+- Require agents to construct paths mentally
+- Mix path formats across different modes
+- Return paths that can't be used without modification
+
+---
+
+## 6. Actionable Failures (The Pivot)
 
 When things go wrong, teach the next step. Not just "error."
 
@@ -273,7 +385,7 @@ The specific recovery actions depend on the tool. Teach the principle: **always 
 
 ---
 
-## 5. Footer Reminder Pattern
+## 7. Footer Reminder Pattern
 
 Counteract lost-in-the-middle and recency bias. Reinforce the trust loop.
 
@@ -309,7 +421,7 @@ The exact wording is tool-specific. The pattern is universal.
 - Include reminder after every result set
 - Mention `--help` for self-recovery
 - Distinguish tool's purpose from other actions
-- Strip emoji when non-TTY
+- Keep output minimal (token-efficient)
 
 **DON'T:**
 - Make reminder verbose (keep under 2-3 lines)
@@ -318,7 +430,7 @@ The exact wording is tool-specific. The pattern is universal.
 
 ---
 
-## 6. AGENTS.md Integration
+## 8. AGENTS.md Integration
 
 Provide copy-pasteable guidance for project READMEs.
 
@@ -361,6 +473,64 @@ Fill in the placeholders. Keep the structure.
 
 ---
 
+## 9. Testing: The Agent Perspective
+
+**The Principle:** Don't just test that it works—test that ANOTHER AGENT can use it effectively.
+
+### The Workflow Test
+
+Can you complete this flow without thinking?
+
+```
+1. Run --help
+   → Can you understand everything without external docs?
+   → Does it explain WHEN to use each flag, not just WHAT they do?
+
+2. Run a basic query
+   → Is the output immediately usable?
+   → Can you copy-paste results into another tool/action?
+
+3. Copy a returned path
+   → Does it work with Read/Glob tool directly?
+   → No mental translation or string manipulation needed?
+
+4. Try a failure case
+   → Does it teach you what to do next?
+   → Or are you left with "error: not found"?
+
+5. Check --list output
+   → Is it consistent with default search output?
+   → Same path format, same labels?
+```
+
+If any answer is "no," iterate.
+
+### The Token Audit
+
+Count tokens in typical output:
+
+| Output Type | Target | Notes |
+|-------------|--------|-------|
+| Default result | ~100-200 tokens | Just what's needed 80% of the time |
+| Expanded result | ~300-500 tokens | Full details when requested |
+| Help text | ~500-800 tokens | Complete reference |
+| Progress (per operation) | ~100 tokens max | 10% intervals only |
+
+If any exceed these targets significantly, simplify.
+
+### The Copy-Paste Test
+
+```
+1. Get a result from your CLI
+2. Copy the path/reference
+3. Paste into the appropriate tool (Read, Glob, etc.)
+4. Did it work on first try?
+```
+
+If you had to modify the copied value, fix your output format.
+
+---
+
 ## Complete Example
 
 ```text
@@ -379,8 +549,8 @@ OPTIONS:
   --help          Show this manual
 
 BEHAVIOR:
-  - Default output: path + summary + read_when (token-efficient)
-  - Use --verbose for full details when needed
+  - Default output: cwd-relative path + summary + read_when (token-efficient)
+  - Use --verbose for absolute path, urls, score, title
   - Multi-word queries: auto-split and recombine if no match
   - If no results: try broader terms, lower threshold, or --list
 
@@ -402,7 +572,9 @@ EXAMPLES:
 ✅ Default to minimal output, provide verbose flag
 ✅ Use natural language text format
 ✅ Use fixed labels as parsing anchors
-✅ Strip visuals when `!process.stdout.isTTY`
+✅ No spammy progress indicators (10% intervals max)
+✅ No interactive elements
+✅ Return agent-usable paths (cwd-relative)
 ✅ Include actionable next steps on failures
 ✅ Add footer reminder teaching `--help` self-recovery
 ✅ Include AGENTS.md section in README
@@ -415,6 +587,7 @@ EXAMPLES:
 ❌ Show all fields by default (token waste)
 ❌ Use JSON output unless requested
 ❌ Use positional parsing (brittle)
+❌ Return paths relative to internal dirs (not agent-usable)
 ❌ Return generic errors without recovery suggestions
 ❌ Make footer reminder verbose
 ❌ Duplicate `--help` in AGENTS.md
@@ -480,10 +653,16 @@ Before finalizing an AI-agent CLI:
 - [ ] Natural language text format
 - [ ] Footer reminder included
 
-**TTY Detection:**
-- [ ] Uses `process.stdout.isTTY === true`
-- [ ] Strips colors/emojis when piped
-- [ ] Preserves semantic content
+**Agent-Usable Paths:**
+- [ ] Paths use cwd-relative format (from process.cwd())
+- [ ] `--list` output matches default search format
+- [ ] Paths work directly with Read/Glob tools
+- [ ] Expanded mode shows absolute + internal-relative
+
+**Token-Efficient Output:**
+- [ ] Progress shown at 10% intervals max (not spammy)
+- [ ] Includes time estimates for progress
+- [ ] No interactive elements (prompts, spinners)
 
 **Failure Handling:**
 - [ ] Each failure has actionable next step
@@ -497,8 +676,8 @@ Before finalizing an AI-agent CLI:
 - [ ] Covers: when to use, defaults, failures
 
 **Testing:**
-- [ ] Tested TTY output
-- [ ] Tested piped output
+- [ ] Output is token-efficient (no spammy progress)
+- [ ] No interactive elements that block automation
 - [ ] Agent can learn from `--help` alone
 - [ ] Failures provide recovery path
 
@@ -630,9 +809,9 @@ Run "tool --help" to refresh your knowledge.
 
 The `ocdocs` CLI demonstrates these principles:
 - Self-teaching `--help` with BEHAVIOR section
-- Minimal default (path + summary + read_when)
-- Verbose mode for full details
-- TTY-aware emoji stripping
+- Minimal default (cwd-relative path with node_modules/ + summary + read_when)
+- Verbose mode for absolute path, docs-relative path, urls, score, title
+- Token-efficient output (no spammy progress, 2 emojis max)
 - Actionable failure suggestions
 - Footer reminder with `--help` refresh
 

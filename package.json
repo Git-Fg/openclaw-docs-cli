@@ -1,6 +1,6 @@
 {
   "name": "openclaw-docs-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Minimalist OpenClaw docs search with Fuse.js fuzzy matching, local paths, and TypeScript",
   "type": "module",
   "exports": {

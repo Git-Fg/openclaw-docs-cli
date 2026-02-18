@@ -17,6 +17,7 @@ export interface DocMetadata {
 
 export interface Document extends DocMetadata {
   path: string;
+  cwdRelative: string;
   local: string;
   online: string;
   content: string;
@@ -142,6 +143,7 @@ export function loadDocs(docsDir: string = DEFAULT_DOCS_DIR): Document[] {
     return {
       ...meta,
       path: rel,
+      cwdRelative: relative(process.cwd(), local),
       local,
       online: `${ONLINE_BASE}/${rel.replace(/\.md$/, '')}`,
       content: readFileSync(local, 'utf8'),
@@ -234,34 +236,33 @@ function calculateSimilarity(a: string, b: string): number {
 // --- Formatting ---
 
 const colors = { reset: '\x1b[0m', bold: '\x1b[1m', blue: '\x1b[34m', dim: '\x1b[2m', yellow: '\x1b[33m' };
-const c = (t: string, k: keyof typeof colors) => (process.stdout.isTTY === true ? `${colors[k]}${t}${colors.reset}` : t);
-const stripEmojis = (t: string) => process.stdout.isTTY === true ? t : t.replace(/[\p{Emoji}]/gu, '');
+const c = (t: string, k: keyof typeof colors) => `${colors[k]}${t}${colors.reset}`;
 
-const REMINDER = () => `${process.stdout.isTTY === true ? '🚨 ' : ''}REMINDER: Use native read tools for file contents; ocdocs for discovery. Run "ocdocs --help" to refresh your knowledge on how to use it.`;
+const REMINDER = () => `⚠️ REMINDER: Use native read tools for file contents; ocdocs for discovery. Run "ocdocs --help" to refresh your knowledge on how to use it.`;
 
 export function formatResults(results: SearchResult[], format: OutputFormat, query: string = ''): string {
   if (results.length === 0) return c('No results found.\n', 'dim');
 
   if (format === 'expanded') {
-    let out = query ? c(stripEmojis(`🔍 Searching for: "${query}"\n\n`), 'bold') : c(stripEmojis('📚 All Documents\n\n'), 'bold');
+    let out = query ? c(`Searching for: "${query}"\n\n`, 'bold') : c('All Documents\n\n', 'bold');
     for (const r of results) {
-      out += c(stripEmojis(`📄 ${r.path} (score: ${(1 - r.score).toFixed(2)})`), 'bold') + '\n';
-      out += c(`   Local:  `, 'dim') + r.local + '\n';
+      out += c(`${r.local} (score: ${(1 - r.score).toFixed(2)})`, 'bold') + '\n';
+      out += c(`   Relative: `, 'dim') + r.path + '\n';
       out += c(`   Online: `, 'dim') + c(r.online, 'blue') + '\n';
       if (r.title) out += c(`   Title:  `, 'dim') + r.title + '\n';
       if (r.summary) out += c(`   Summary:`, 'dim') + r.summary + '\n';
       if (r.readWhen.length) out += c(`   Read When:`, 'dim') + r.readWhen.join('; ') + '\n';
-      if (r.error) out += c(stripEmojis(`   ⚠️  ${r.error}`), 'yellow') + '\n';
+      if (r.error) out += c(`   Error:  ${r.error}`, 'yellow') + '\n';
       out += '\n';
     }
     return out + c(`Found ${results.length} result${results.length !== 1 ? 's' : ''}\n`, 'dim') +
       c(`\n${REMINDER()}\n`, 'dim');
   }
 
-  // Default format: path + summary + read_when only (token-efficient for agents)
+  // Default format: cwd-relative path + summary + read_when only (token-efficient for agents)
   let out = '';
   for (const r of results) {
-    out += `${r.path}\n`;
+    out += `${r.cwdRelative}\n`;
     if (r.summary) out += `  ${c('Summary:', 'dim')} ${r.summary}\n`;
     if (r.readWhen.length) out += `  ${c('Read When:', 'dim')} ${r.readWhen.join('; ')}\n`;
     out += '\n';

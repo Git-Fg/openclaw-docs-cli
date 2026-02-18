@@ -22,9 +22,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Golden Paths
 
 **Finding OpenClaw documentation:**
-1. Default: `ocdocs "<query>"` or `openclaw-docs-cli "<query>"` → returns path + summary + read_when (token-efficient)
-2. No results? Try: split multi-word terms, `--threshold 0.3`, or `--list` for discovery
-3. Need full details? Use `ocdocs "<query>" --expand` (adds urls, score, title)
+1. Run `ocdocs` (no args) → shows help with example queries to try
+2. Default: `ocdocs "<query>"` → returns cwd-relative path (node_modules/...) + summary + read_when
+3. Expanded: `ocdocs "<query>" --expand` → returns absolute path + docs-relative path + urls + score + title
 4. Always use native Read tool for file contents; `ocdocs` is for discovery only
 
 **Output format principle:** Minimal by default, verbose on request. This keeps token costs low for the common case (finding the right doc) while allowing detail when needed.
@@ -41,6 +41,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. **Self-Teaching via `--help`**: Help text must be a complete reference—assume the agent reads nothing else first.
 2. **Semantic Density**: Flat text > JSON (30-40% cheaper). Use fixed labels as anchors.
-3. **TTY Detection**: Strip visuals (emojis, spinners, colors) when `!process.stdout.isTTY`.
+3. **Token-Efficient Output**: No spammy progress bars (tqdm-style). If progress is needed, show every 10% with time estimate (max ~10 updates). No interactive elements.
 4. **Actionable Failures**: When no results, suggest the next step (e.g., "split query", "lower threshold").
-5. **README Snippet**: Provide copy-pasteable AGENTS.md block explaining when/how to use the tool.
+5. **Visual Elements**: 2 emojis max - only for warnings (⚠️) and critical reminders. No decorative icons.
+
+## Agent-Optimized Path Handling
+
+**Principle:** Paths shown to agents must be directly usable with Read/Glob tools - no mental translation required.
+
+**Two path types to understand:**
+
+| Type | Example | When to use |
+|------|---------|-------------|
+| `cwdRelative` | `node_modules/openclaw/docs/concepts/oauth.md` | Default output, --list, agent consumption |
+| `path` (docs-relative) | `concepts/oauth.md` | Expanded mode reference, internal use |
+| `local` (absolute) | `/Users/.../node_modules/.../oauth.md` | Expanded mode primary entry |
+
+**Rules:**
+- **Default mode**: Show `cwdRelative` (from `process.cwd()`) - agent can copy-paste to Read tool
+- **`--list`**: Show `cwdRelative` - must be consistent with default search output
+- **Expanded mode**: Show absolute path as primary, with `path` (docs-relative) labeled as "Relative:"
+- **Never show**: Paths relative to internal directories that agents can't access directly
+
+**Implementation pattern:**
+```typescript
+// In Document type:
+cwdRelative: relative(process.cwd(), local)  // For agent consumption
+path: relative(docsDir, local)              // For internal reference
+local: join(docsDir, rel)                   // Absolute path
+```
+
+**Testing verification:** Run the CLI as an agent would - try using the returned paths directly with Read tool.

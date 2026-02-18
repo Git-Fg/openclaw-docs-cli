@@ -50,12 +50,12 @@ const allDocs = getDocs();
 Append these to your project's `AGENTS.md`. Do not replace your full prompt setup:
 
 ```markdown
-IMPORTANT : You have access to `ocdocs` cli tool, optimized for Ai Agents.
-- MANDATORY: When you need to find any information about openclaw, you must use `ocdocs --help` and extensively leverage this tool.
-- Default output: path + summary + read_when (token-efficient)
-- Use --expand only when you need urls/score/full details
-- If no results, split multi-word queries, adjust --threshold, or try broader terms.
-- Always use your native read tools for file contents; ocdocs is for discovery.
+IMPORTANT: You have access to `ocdocs` CLI tool, optimized for AI Agents.
+- First step: Run `ocdocs --help` to learn capabilities
+- Default output: cwd-relative path (node_modules/...) + summary + read_when (token-efficient)
+- Use --expand for absolute path, urls, score, title
+- If no results: split multi-word queries, adjust --threshold, or try --list
+- Paths are usable directly with Read tool; ocdocs is for discovery only
 ```
 
 ## Features
