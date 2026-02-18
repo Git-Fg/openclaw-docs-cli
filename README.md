@@ -2,15 +2,7 @@
 
 Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 
-## Installation
-
-```bash
-# Install globally (recommended for CLI use)
-npm install -g openclaw-docs-cli
-
-# Install as a dependency
-npm install openclaw-docs-cli
-```
+UPDATE : That is now useless, `openclaw docs` finally shows the local path alongside the url. 
 
 **Note:** Requires `openclaw` package to be installed for docs auto-resolution.
 
