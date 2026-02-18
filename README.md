@@ -2,9 +2,11 @@
 
 Minimalist, AI-optimized documentation search for OpenClaw using Fuse.js.
 
-UPDATE : That is now useless, `openclaw docs` finally shows the local path alongside the url. 
 
-**Note:** Requires `openclaw` package to be installed for docs auto-resolution.
+
+/!\ UPDATE : That is now useless, `openclaw docs` finally shows the local path alongside the url. /!\ 
+
+
 
 ## CLI
 
